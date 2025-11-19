@@ -91,13 +91,12 @@ namespace SyncNode.Services
 
                 if (isPresent)
                 {
-                    var recievers = _settings.Hosts.Where(x => !x.Contains(entity.Origin));
+                    // Fix: Compare just the host:port part
+                    var receivers = _settings.Hosts.Where(x => !x.Contains(entity.Origin));
 
-                    foreach (var reciever in recievers)
+                    foreach (var receiver in receivers)
                     {
-                        // var url = $"{reciever}/sync/{entity.ObjectType}";
-                        var url = $"{reciever}/api/{entity.ObjectType.ToLower()}/sync";
-
+                        var url = $"{receiver}/api/{entity.ObjectType.ToLower()}/sync";
 
                         try
                         {
@@ -105,12 +104,17 @@ namespace SyncNode.Services
 
                             if (!result.IsSuccessStatusCode)
                             {
-                                // log error
+                                var errorContent = await result.Content.ReadAsStringAsync();
+                                Console.WriteLine($"Sync failed to {receiver}: {result.StatusCode} - {errorContent}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Sync successful to {receiver} for {entity.ObjectType} ID: {entity.Id}");
                             }
                         }
                         catch (Exception e)
                         {
-                            // log
+                            Console.WriteLine($"Sync error to {receiver}: {e.Message}");
                         }
                     }
                 }

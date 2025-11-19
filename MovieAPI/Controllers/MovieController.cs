@@ -1,6 +1,6 @@
-﻿using Common.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Common.Models;
 using MovieAPI.Repositories;
 using MovieAPI.Services;
 
@@ -18,13 +18,12 @@ namespace MovieAPI.Controllers
         {
             _movieRepository = movieRepository;
             _movieSyncService = movieSyncService;
-        }
 
+        }
         [HttpGet]
         public List<Movie> GetAllMovies()
         {
             var records = _movieRepository.GetAllRecords();
-
             return records;
         }
 
@@ -32,23 +31,22 @@ namespace MovieAPI.Controllers
         public Movie GetMovieById(Guid id)
         {
             var result = _movieRepository.GetRecordById(id);
-
             return result;
         }
 
         [HttpPost]
-        public IActionResult Create(Movie movie)
+        public async Task<IActionResult> Create(Movie movie)
         {
             movie.LastChangedAt = DateTime.UtcNow;
-
             var result = _movieRepository.InsertRecord(movie);
 
-            _movieSyncService.Upsert(movie);
+            await _movieSyncService.Upsert(movie);
+
             return Ok(result);
         }
 
         [HttpPut]
-        public IActionResult Upsert(Movie movie)
+        public async Task<IActionResult> Upsert(Movie movie)
         {
             if (movie.Id == Guid.Empty)
             {
@@ -57,16 +55,17 @@ namespace MovieAPI.Controllers
             movie.LastChangedAt = DateTime.UtcNow;
             _movieRepository.UpsertRecord(movie);
 
-            _movieSyncService.Upsert(movie);
+            await _movieSyncService.Upsert(movie);
+
             return Ok(movie);
         }
 
         [HttpPut("sync")]
         public IActionResult UpsertSync(Movie movie)
         {
-          var existingMovie = _movieRepository.GetRecordById(movie.Id);
+            var existingMovie = _movieRepository.GetRecordById(movie.Id);
 
-            if(existingMovie == null || movie.LastChangedAt > existingMovie.LastChangedAt)
+            if (existingMovie == null || movie.LastChangedAt > existingMovie.LastChangedAt)
             {
                 _movieRepository.UpsertRecord(movie);
             }
@@ -74,13 +73,13 @@ namespace MovieAPI.Controllers
             return Ok();
         }
 
-
         [HttpDelete("sync")]
         public IActionResult DeleteSync(Movie movie)
         {
             var existingMovie = _movieRepository.GetRecordById(movie.Id);
 
-            if (existingMovie != null || movie.LastChangedAt > existingMovie.LastChangedAt)
+            //if (existingMovie != null || movie.LastChangeAt > existingMovie.LastChangeAt)
+            if (existingMovie == null || movie.LastChangedAt > existingMovie.LastChangedAt)
             {
                 _movieRepository.DeleteRecord(movie.Id);
             }
@@ -88,38 +87,22 @@ namespace MovieAPI.Controllers
             return Ok();
         }
 
-        //[HttpDelete("{id}")]
-        //public IActionResult Delete(Guid id)
-        //{
-        //    var movie = _movieRepository.GetRecordById(id);
-
-        //    if (movie == null)
-        //    {
-        //        return BadRequest("Movie does not exist :(");
-        //    }
-
-        //    _movieRepository.DeleteRecord(id);
-
-        //    movie.LastChangedAt = DateTime.UtcNow;
-        //    _movieSyncService.Delete(movie);
-
-        //    return Ok("Deleted " + id);
-        //}
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var movie = _movieRepository.GetRecordById(id);
-
             if (movie == null)
-                return BadRequest("Movie does not exist :(");
-
+            {
+                return BadRequest("Movie not found");
+            }
             _movieRepository.DeleteRecord(id);
 
             movie.LastChangedAt = DateTime.UtcNow;
             await _movieSyncService.Delete(movie);
 
-            return Ok("Deleted " + id);
+            return Ok("Deleted" + id);
         }
+
 
     }
 }

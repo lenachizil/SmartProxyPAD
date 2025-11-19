@@ -10,28 +10,35 @@ namespace SyncNode
         {
             Configuration = configuration;
         }
+
         public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.Configure<MovieAPISettings>(Configuration.GetSection("MovieAPISettings"));
+            // Load settings
+            services.Configure<MovieAPISettings>(
+                Configuration.GetSection("MovieAPISettings"));
 
             services.AddSingleton<IMovieAPISettings>(provider =>
-            provider.GetRequiredService<IOptions<MovieAPISettings>>().Value);
+                provider.GetRequiredService<IOptions<MovieAPISettings>>().Value);
 
+            // Register SyncWorkJobService as Singleton + HostedService
             services.AddSingleton<SyncWorkJobService>();
-                        services.AddHostedService(provider => provider.GetRequiredService<SyncWorkJobService>());
+            services.AddHostedService(provider => provider.GetRequiredService<SyncWorkJobService>());
 
             services.AddControllers();
         }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseRouting();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
