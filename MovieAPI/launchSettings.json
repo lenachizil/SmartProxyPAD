@@ -1,0 +1,44 @@
+﻿//{
+//  "profiles": {
+//    "MovieAPI1": {
+//      "commandName": "Project",
+//      "launchBrowser": true,
+//      "environmentVariables": {
+//        "ASPNETCORE_ENVIRONMENT": "Development",
+//        "MovieDbName": "movie1"
+//      },
+//      "applicationUrl": "http://localhost:9001"
+//    },
+//    "MovieAPI2": {
+//      "commandName": "Project",
+//      "launchBrowser": true,
+//      "environmentVariables": {
+//        "ASPNETCORE_ENVIRONMENT": "Development",
+//        "MovieDbName": "movie2"
+//      },
+//      "applicationUrl": "http://localhost:9002"
+//    }
+//  }
+//}
+
+{
+  "profiles": {
+    "MovieAPI1": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "MovieDbName": "movie1",
+        "SyncHost": "http://localhost:9002/api/movie/sync"
+      },
+      "applicationUrl": "http://localhost:9001"
+    },
+
+    "MovieAPI2": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "MovieDbName": "movie2",
+        "SyncHost": "http://localhost:9001/api/movie/sync"
+      },
+      "applicationUrl": "http://localhost:9002"
+    }
+  }
+}
