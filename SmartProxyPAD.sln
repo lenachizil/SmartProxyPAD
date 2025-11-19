@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy", "Proxy\Proxy.csproj", "{737A743D-E129-4282-8D3E-7128938B4F8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncNode", "SyncNode\SyncNode.csproj", "{1254EF4D-7F62-4D20-BC65-FDE3B5D2BDFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{737A743D-E129-4282-8D3E-7128938B4F8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{737A743D-E129-4282-8D3E-7128938B4F8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{737A743D-E129-4282-8D3E-7128938B4F8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1254EF4D-7F62-4D20-BC65-FDE3B5D2BDFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1254EF4D-7F62-4D20-BC65-FDE3B5D2BDFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1254EF4D-7F62-4D20-BC65-FDE3B5D2BDFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1254EF4D-7F62-4D20-BC65-FDE3B5D2BDFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

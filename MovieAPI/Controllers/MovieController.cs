@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MovieAPI.Repositories;
+using MovieAPI.Services;
 
 namespace MovieAPI.Controllers
 {
@@ -10,10 +11,13 @@ namespace MovieAPI.Controllers
     public class MovieController : ControllerBase
     {
         private readonly IMongoRepository<Movie> _movieRepository;
+        private readonly ISyncService<Movie> _movieSyncService;
 
-        public MovieController(IMongoRepository<Movie> movieRepository)
+        public MovieController(IMongoRepository<Movie> movieRepository,
+            ISyncService<Movie> movieSyncService)
         {
             _movieRepository = movieRepository;
+            _movieSyncService = movieSyncService;
         }
 
         [HttpGet]
@@ -39,6 +43,7 @@ namespace MovieAPI.Controllers
 
             var result = _movieRepository.InsertRecord(movie);
 
+            _movieSyncService.Upsert(movie);
             return Ok(result);
         }
 
@@ -52,22 +57,69 @@ namespace MovieAPI.Controllers
             movie.LastChangedAt = DateTime.UtcNow;
             _movieRepository.UpsertRecord(movie);
 
+            _movieSyncService.Upsert(movie);
             return Ok(movie);
         }
 
+        [HttpPut("sync")]
+        public IActionResult UpsertSync(Movie movie)
+        {
+          var existingMovie = _movieRepository.GetRecordById(movie.Id);
+
+            if(existingMovie == null || movie.LastChangedAt > existingMovie.LastChangedAt)
+            {
+                _movieRepository.UpsertRecord(movie);
+            }
+
+            return Ok();
+        }
+
+
+        [HttpDelete("sync")]
+        public IActionResult DeleteSync(Movie movie)
+        {
+            var existingMovie = _movieRepository.GetRecordById(movie.Id);
+
+            if (existingMovie != null || movie.LastChangedAt > existingMovie.LastChangedAt)
+            {
+                _movieRepository.DeleteRecord(movie.Id);
+            }
+
+            return Ok();
+        }
+
+        //[HttpDelete("{id}")]
+        //public IActionResult Delete(Guid id)
+        //{
+        //    var movie = _movieRepository.GetRecordById(id);
+
+        //    if (movie == null)
+        //    {
+        //        return BadRequest("Movie does not exist :(");
+        //    }
+
+        //    _movieRepository.DeleteRecord(id);
+
+        //    movie.LastChangedAt = DateTime.UtcNow;
+        //    _movieSyncService.Delete(movie);
+
+        //    return Ok("Deleted " + id);
+        //}
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var movie = _movieRepository.GetRecordById(id);
 
             if (movie == null)
-            {
                 return BadRequest("Movie does not exist :(");
-            }
 
             _movieRepository.DeleteRecord(id);
 
+            movie.LastChangedAt = DateTime.UtcNow;
+            await _movieSyncService.Delete(movie);
+
             return Ok("Deleted " + id);
         }
+
     }
 }
